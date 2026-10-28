@@ -22,6 +22,13 @@ forked at `github.com/AleBiCi/my_PyDrivingSim`. Workspace rules are in `../../CL
 - `pydrivingsim/vehicle.py`: state integrated with explicit Euler at `dt = 0.001` s using
   `vehicle_model/vehicle_double_track_model.py` (double track + Pacejka, `vehicle_params.py`,
   `pacejka_params.py`). State: `[0]=x, [1]=y, [2]=yaw, [3]=u, [4]=v, [5]=yaw rate, [10]=steer`.
+- Off-road maps: `python simulator.py --map scenarios/maps/<file>.json [--preview]`. JSON format, object IDs
+  and limits in `scenarios/maps/README.md`. Loader `scenarios/map_scenario.py` (`load_map`, `MapScenario`),
+  obstacle class `pydrivingsim/obstacle.py` (circle footprint, collision check, sprite
+  `imgs/offroad/<type>.png`, falls back to `imgs/error.png`: artwork not chosen yet, the developer picks it),
+  `pydrivingsim/pathoverlay.py` draws the agent's `TrajectoryPointIX/IY`. `World.set_background_tile` for an
+  optional tiled background. `agent.py` sends target as `ObjID = 3` and obstacles as `ObjID = 4`
+  (diameter in `ObjLen/ObjWidth`), also in the original scenario (target at (182, -1)).
 - `agent/`: ctypes bindings and precompiled `libagent_lib` (read-only). `interfaces_python_data_structs.py`
   must stay byte-compatible with `basic_agent_ST/lib/interfaces_data_structs.h`.
 

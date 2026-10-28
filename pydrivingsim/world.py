@@ -43,6 +43,9 @@ class World(metaclass=Singleton):
         # initial world position
         self.set_world_pos((0, 0))
 
+        # optional tiled background (off-road maps), see set_background_tile()
+        self.bg_tile = None
+
         self.obj_list = []
 
     def set_world_pos(self, pos):
@@ -50,6 +53,19 @@ class World(metaclass=Singleton):
 
     def get_world_pos(self):
         return self.world_pos
+
+    def set_background_tile(self, img, tile_size_m):
+        """Replace the default background with a seamless tile repeated every tile_size_m [m]."""
+        try:
+            tile = pygame.image.load(img).convert()
+        except Exception:
+            print("Background tile %s not found: keeping the default background" % img)
+            return
+        side = max(1, int(round(tile_size_m * self.scaling_factor)))
+        self.bg_tile = pygame.transform.smoothscale(tile, (side, side))
+
+    def set_caption(self, text):
+        pygame.display.set_caption(text)
 
     def get_dt(self):
         return self.__metadata["dt"]
@@ -59,10 +75,25 @@ class World(metaclass=Singleton):
 
     def _render(self):
         # move background in the 0,0 configuration, move the backgound in the position of the moving world, center the view
-        screen_x_pos = self.bg_pos[0] - self.world_pos[0] * self.scaling_factor + self.__metadata["screen_size"][0] / 2
-        # the minus sign there is because the graph y axis points downward.
-        screen_y_pos = self.bg_pos[1] + self.world_pos[1] * self.scaling_factor + self.__metadata["screen_size"][1] / 2
-        self.screen.blit(self.backgorund, (screen_x_pos,screen_y_pos))
+        # clear the frame: off-road maps can move the view outside the default background image
+        self.screen.fill((110, 100, 80))
+        if self.bg_tile is None:
+            screen_x_pos = self.bg_pos[0] - self.world_pos[0] * self.scaling_factor + self.__metadata["screen_size"][0] / 2
+            # the minus sign there is because the graph y axis points downward.
+            screen_y_pos = self.bg_pos[1] + self.world_pos[1] * self.scaling_factor + self.__metadata["screen_size"][1] / 2
+            self.screen.blit(self.backgorund, (screen_x_pos,screen_y_pos))
+        else:
+            # tile anchored to the world origin, so it moves with the world like the objects
+            side = self.bg_tile.get_width()
+            x0 = (self.screen_world_center[0] - self.world_pos[0] * self.scaling_factor) % side - side
+            y0 = (self.screen_world_center[1] + self.world_pos[1] * self.scaling_factor) % side - side
+            y = y0
+            while y < self.__metadata["screen_size"][1]:
+                x = x0
+                while x < self.__metadata["screen_size"][0]:
+                    self.screen.blit(self.bg_tile, (x, y))
+                    x += side
+                y += side
         for obj in self.obj_list:
             obj.render()
 
@@ -91,4 +122,4 @@ class World(metaclass=Singleton):
     def exit(self):
         pygame.display.quit()
         pygame.quit()
-        exit()
+        exit()

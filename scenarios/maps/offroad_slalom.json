@@ -1,0 +1,27 @@
+{
+  "name": "Stump and rock slalom",
+  "start": {
+    "x": 0.0,
+    "y": 0.0,
+    "yaw_deg": 0.0
+  },
+  "target": {
+    "x": 75.0,
+    "y": 0.0
+  },
+  "stop_on_collision": true,
+  "obstacles": [
+    {"type": "rock", "x": 12.0, "y": 1.5, "d": 4.0},
+    {"type": "stump", "x": 12.0, "y": 6.0, "d": 1.0},
+    {"type": "boulder", "x": 24.0, "y": -2.0, "d": 4.5},
+    {"type": "stump", "x": 24.0, "y": -7.0, "d": 1.0},
+    {"type": "bush", "x": 36.0, "y": 1.5, "d": 4.0},
+    {"type": "stump", "x": 36.0, "y": 6.0, "d": 1.0},
+    {"type": "boulder", "x": 48.0, "y": -2.0, "d": 4.5},
+    {"type": "stump", "x": 48.0, "y": -7.0, "d": 1.0},
+    {"type": "rock", "x": 60.0, "y": 1.5, "d": 4.0},
+    {"type": "stump", "x": 60.0, "y": 6.0, "d": 1.0},
+    {"type": "tree", "x": 66.0, "y": -9.0, "d": 4.0},
+    {"type": "tree", "x": 69.0, "y": 9.0, "d": 4.0}
+  ]
+}

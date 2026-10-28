@@ -9,7 +9,10 @@ from math import *
 import agent.agent_interfaces_connector as agent_lib
 from agent.interfaces_python_data_structs import input_data_str, output_data_str
 
-from pydrivingsim import World, Vehicle, TrafficLight, TrafficCone, Target, SuggestedSpeedSignal, Coin
+from pydrivingsim import World, Vehicle, TrafficLight, TrafficCone, Target, SuggestedSpeedSignal, Coin, Obstacle
+
+# Max objects in the scenario message (input_data_str.ObjID[20])
+MAX_OBJS = 20
 
 
 c = agent_lib.AgentConnector()
@@ -53,6 +56,9 @@ class Agent():
         self.cycle_number = 0
         self.requested_cruising_speed = 20
         self.action = (0,0)
+
+        # Optional PathOverlay that draws the agent's TrajectoryPointIX/IY (set by the scenario)
+        self.path_overlay = None
 
         # Data to be filtered
         self.ALgtFild = 0
@@ -151,6 +157,18 @@ class Agent():
                 s.ObjWidth[objId] = obj.size
                 objId = objId + 1
 
+            # Off-road map objects. ObjID: 3 = target (goal), 4 = static obstacle (circle of diameter ObjLen)
+            if (type(obj) is Target or type(obj) is Obstacle) and objId < MAX_OBJS:
+                s.ObjID[objId] = 3 if type(obj) is Target else 4
+                delta_x = obj.pos[0] - v.state[0]
+                delta_y = obj.pos[1] - v.state[1]
+                s.ObjX[objId] = delta_x * cos(v.state[2]) + delta_y * sin(v.state[2])
+                s.ObjY[objId] = - delta_x * sin(v.state[2]) + delta_y * cos(v.state[2])
+                s.ObjVel[objId] = 0
+                s.ObjLen[objId] = obj.d if type(obj) is Obstacle else 0
+                s.ObjWidth[objId] = obj.d if type(obj) is Obstacle else 0
+                objId = objId + 1
+
             if type(obj) is SuggestedSpeedSignal:
                 s.AdasisSpeedLimitValues[speedlimitId] = obj.vel
                 s.AdasisSpeedLimitDist[speedlimitId] = obj.pos[0] - v.state[0]
@@ -191,6 +209,13 @@ class Agent():
 
         #self.action = (0.01, 0.01)
         self.action = (m.RequestedAcc,m.RequestedSteerWhlAg)
+
+        # Trajectory points are in the vehicle frame: draw them in the world frame
+        if self.path_overlay is not None:
+            n = max(0, min(m.NTrajectoryPoints, 23))
+            self.path_overlay.set_points([(v.state[0] + m.TrajectoryPointIX[i] * cos(v.state[2]) - m.TrajectoryPointIY[i] * sin(v.state[2]),
+                                           v.state[1] + m.TrajectoryPointIX[i] * sin(v.state[2]) + m.TrajectoryPointIY[i] * cos(v.state[2]))
+                                          for i in range(n)])
 
     def terminate(self):
         World().loop = 0

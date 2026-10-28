@@ -1,0 +1,30 @@
+{
+  "name": "Boulder field",
+  "start": {
+    "x": 0.0,
+    "y": 0.0,
+    "yaw_deg": 0.0
+  },
+  "target": {
+    "x": 60.0,
+    "y": 8.0
+  },
+  "stop_on_collision": true,
+  "obstacles": [
+    {"type": "boulder", "x": 12.0, "y": 0.5, "d": 3.5},
+    {"type": "rock", "x": 14.0, "y": 5.5, "d": 1.8},
+    {"type": "rock", "x": 16.0, "y": -4.5, "d": 1.5},
+    {"type": "boulder", "x": 24.0, "y": 3.0, "d": 4.0},
+    {"type": "rock", "x": 22.0, "y": -2.0, "d": 1.6},
+    {"type": "bush", "x": 27.0, "y": -6.0, "d": 2.0},
+    {"type": "rock", "x": 31.0, "y": 8.5, "d": 2.0},
+    {"type": "boulder", "x": 35.0, "y": -1.0, "d": 3.0},
+    {"type": "rock", "x": 38.0, "y": 4.5, "d": 1.4},
+    {"type": "boulder", "x": 44.0, "y": 7.0, "d": 3.5},
+    {"type": "rock", "x": 45.0, "y": 1.0, "d": 1.8},
+    {"type": "bush", "x": 48.0, "y": -4.0, "d": 1.8},
+    {"type": "rock", "x": 51.0, "y": 11.0, "d": 1.6},
+    {"type": "boulder", "x": 53.0, "y": 4.0, "d": 3.0},
+    {"type": "stump", "x": 57.0, "y": 12.5, "d": 0.8}
+  ]
+}

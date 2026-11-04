@@ -5,8 +5,7 @@
 import pygame, math
 import numpy as np
 
-from vehicle_model.vehicle_params import VehicleParams
-from vehicle_model.pacejka_params import PacejkaParam
+from vehicle_model.param_sets import load_param_set
 from vehicle_model.vehicle_double_track_model import vehicle_double_track_model
 from pydrivingsim import VirtualObject, World
 
@@ -41,11 +40,11 @@ class Vehicle(VirtualObject):
     __metadata = {
         "dt": 0.001
     }
-    def __init__( self ):
+    def __init__( self, param_set = "chimera" ):
         super().__init__(self.__metadata["dt"])
 
-        self.vehicle = VehicleParams()
-        self.pacejka = PacejkaParam()
+        # Vehicle + tyre parameter set by name, see vehicle_model/param_sets.py
+        self.vehicle, self.pacejka = load_param_set(param_set)
 
         # Sprite
         self.car = VehicleSprite(self.vehicle)
@@ -65,10 +64,11 @@ class Vehicle(VirtualObject):
         X[0] = 0
         X[1] = 0
         X[2] = 0
-        X[6] = 906.97882  # [N] vertical force for the rear right wheel
-        X[7] = 906.97882  # [N] vertical force for the rear left wheel
-        X[8] = 638.09618  # [N] vertical force for the front right wheel
-        X[9] = 638.09618  # [N] vertical force for the front left wheel
+        v = self.vehicle.vehicle
+        X[6] = v.m * 9.81 * v.Lf / (v.Lf + v.Lr) / 2  # [N] static vertical force for the rear right wheel
+        X[7] = X[6]                                  # [N] static vertical force for the rear left wheel
+        X[8] = v.m * 9.81 * v.Lr / (v.Lf + v.Lr) / 2  # [N] static vertical force for the front right wheel
+        X[9] = X[8]                                  # [N] static vertical force for the front left wheel
 
         self.t = 0
         self.dX = np.zeros(24)

@@ -22,6 +22,9 @@ forked at `github.com/AleBiCi/my_PyDrivingSim`. Workspace rules are in `../../CL
 - `pydrivingsim/vehicle.py`: state integrated with explicit Euler at `dt = 0.001` s using
   `vehicle_model/vehicle_double_track_model.py` (double track + Pacejka, `vehicle_params.py`,
   `pacejka_params.py`). State: `[0]=x, [1]=y, [2]=yaw, [3]=u, [4]=v, [5]=yaw rate, [10]=steer`.
+- Vehicle parameter sets (uncommitted, 2026-11-04): `Vehicle(param_set = "chimera" | "polaris_utv" | "cherokee_37in" | "uaz469")` via
+  `vehicle_model/param_sets.py`; 4WD torque split `TransmissionData.front_torque_fraction`. Sources, derivations and the
+  4WD/LSD notes in `../../rock_crawler_params/` (README.md, UAZ469_and_4WD.md). Chrono data: NOT IN SLIDES.
 - Off-road maps: `python simulator.py --map scenarios/maps/<file>.json [--preview]`. JSON format, object IDs
   and limits in `scenarios/maps/README.md`. Loader `scenarios/map_scenario.py` (`load_map`, `MapScenario`),
   obstacle class `pydrivingsim/obstacle.py` (circle footprint, collision check, sprite

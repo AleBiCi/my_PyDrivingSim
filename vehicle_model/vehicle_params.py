@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 
 # ----------------------------------------------------------------
@@ -84,9 +84,25 @@ class WheelData:
 # ----------------------------------------------------------------
 
 @dataclass
+class DiffData:
+    # One differential of the "driveline_4wd" layout (driveline_model.py, DoV VD-Lecture-05b p.48-60)
+    mode : str          = "open"                              # [-] "open", "lsd" or "locked"
+    tbr_on : float      = 1.0                                 # [-] torque bias ratio, power-on (1 = open)
+    tbr_off : float     = 1.0                                 # [-] torque bias ratio, power-off
+    preload : float     = 0.0                                 # [Nm] clutch-pack preload torque (0 = geared/Torsen LSD)
+
+@dataclass
 class TransmissionData:
     tau_red : float       = 52/15                                 # [-] Transmission ratio of the gearbox
     eff_red : float  = 0.93                                  # [-] Efficiency of the gearbox
+    front_torque_fraction : float = 0.0                       # [-] Share of driving torque sent to the front wheels (0 = RWD)
+    # drive_layout: "per_wheel_motors" = Chimera Evo, one motor per driven wheel (original model, the diff* and k_dif
+    # fields are unused); "driveline_4wd" = one engine + centre/front/rear differentials (driveline_model.py)
+    drive_layout : str    = "per_wheel_motors"
+    diff_front : DiffData = field(default_factory=DiffData)
+    diff_rear : DiffData  = field(default_factory=DiffData)
+    diff_centre : DiffData = field(default_factory=DiffData)
+    k_dif : float         = 0.0                               # [Nm*s/rad] differential locking stiffness (driveline_4wd only)
 
 # ----------------------------------------------------------------
 #   ___ _               _             ___             ___       _
@@ -180,6 +196,8 @@ class VehicleData():
 # Low velocity tire correction
     Vlow_long : float   = 4                                     # [m/s] speed threshold to use low-speed corrections in the tire longit slip and force models
     Vlow_lat : float    = 4                                     # [m/s] speed threshold to use low-speed corrections in the tire lateral slip and force models
+# Integration
+    n_substeps : int    = 1                                     # [-] explicit Euler sub-steps per sim step (step dt/n_substeps), 1 = original
 
 # ----------------------------------------------------------------
 #

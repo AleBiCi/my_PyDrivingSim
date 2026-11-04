@@ -93,11 +93,15 @@ class Vehicle(VirtualObject):
 
     def object_freq_compute(self):
         self.t = self.t + self.__metadata["dt"]
-        next_state, next_dX = self.__discrete(self.state, self.__metadata["dt"], self.dX, self.action)
-
-        self.state = next_state
+        # n_substeps explicit Euler steps of dt/n_substeps (n_substeps = 1 for the Chimera: original behaviour).
+        # Heavy off-road sets need more: the wheel spin + longitudinal slip relaxation loop is unstable with explicit
+        # Euler when dt * Cx * R^2 / (V * iwa) > 1 (Cx slip stiffness, V speed), i.e. at low speed and high wheel load.
+        n_sub = self.vehicle.vehicle.n_substeps
+        for _ in range(n_sub):
+            next_state, next_dX = self.__discrete(self.state, self.__metadata["dt"] / n_sub, self.dX, self.action)
+            self.state = next_state
+            self.dX = next_dX # potrei cambiarlo in qualcosa del tipo (next_state - self.state)/dt
         self.pos = (self.state[0], self.state[1])
-        self.dX = next_dX # potrei cambiarlo in qualcosa del tipo (next_state - self.state)/dt
 
     def set_screen_here(self):
         World().set_world_pos((self.state[0],self.state[1]))

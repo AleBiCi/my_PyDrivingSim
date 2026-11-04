@@ -1,4 +1,4 @@
-from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData,
+from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData, DiffData,
                                           SteeringSystemData, BrakingSystemData, MotorData, AccumulatorData,
                                           WheelData, SuspensionData)
 
@@ -52,12 +52,18 @@ def Uaz469VehicleParams():
             CAzf = 0.0,                   # [N*s^2/m^2] [A]
             CAzr = 0.0,                   # [N*s^2/m^2] [A]
             Vlow_long = 4,                # [m/s] [S] TODO(dev): crawling speeds are mostly below this threshold
-            Vlow_lat = 4),                # [m/s] [S]
+            Vlow_lat = 4,                 # [m/s] [S]
+            n_substeps = 4),            # [-] [A] dt = 0.25 ms: wheel/tyre slip loop stable with explicit Euler (open-loop runs)
         chassis = ChassisData(is_xx = 785, is_yy = 2612, is_zz = 2761, is_xz = 0),   # [C] UAZ469_Chassis.json
         transmission = TransmissionData(
             tau_red = 1 / (0.125 * 0.236),  # [-] [D] 1st gear 0.125 x 4WD conical gear 0.236 (fixed gear)
             eff_red = 0.93,                 # [-] [S]
-            front_torque_fraction = 0.5),   # [-] [A] UAZBUS_Driveline4WD.json: central differential, equal split assumed
+            front_torque_fraction = 0.5,    # [-] [A] UAZBUS_Driveline4WD.json: central differential, equal split assumed
+            drive_layout = "driveline_4wd", # [C] UAZBUS_Driveline4WD.json "ShaftsDriveline4WD": engine + 3 differentials
+            diff_front = DiffData(mode = "open"),    # [C] Chrono default: differentials unlocked. TODO(dev): open/lsd/locked
+            diff_rear = DiffData(mode = "open"),     # [C] TODO(dev)
+            diff_centre = DiffData(mode = "open"),   # [C] TODO(dev): a real UAZ-469 transfer case has no centre diff (UNVERIFIED) -> "locked"
+            k_dif = 1300),                  # [Nm*s/rad] [A] TODO(dev): about 0.5*iwa/dt (dt = 1 ms), Euler-stable below 2*iwa/dt
         steering_system = SteeringSystemData(tau_D = 10, tau_H = 0.03),   # [S] TODO(dev): steering ratio not in Chrono data
         braking_system = BrakingSystemData(
             max_brake_torque_front = 3000,  # [Nm] [C] UAZBUS_BrakeSimple_Front.json (per wheel)

@@ -1,5 +1,5 @@
 import math
-from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData,
+from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData, DiffData,
                                           SteeringSystemData, BrakingSystemData, MotorData, AccumulatorData,
                                           WheelData, SuspensionData)
 
@@ -51,12 +51,18 @@ def PolarisUtvVehicleParams():
             CAzf = 0.0,                   # [N*s^2/m^2] [A] no downforce
             CAzr = 0.0,                   # [N*s^2/m^2] [A]
             Vlow_long = 4,                # [m/s] [S] TODO(dev): crawler speeds are mostly below this threshold
-            Vlow_lat = 4),                # [m/s] [S]
+            Vlow_lat = 4,                 # [m/s] [S]
+            n_substeps = 2),            # [-] [A] dt = 0.50 ms: wheel/tyre slip loop stable with explicit Euler (open-loop runs)
         chassis = ChassisData(is_xx = 275.6945599, is_yy = 853.4464526, is_zz = 1200, is_xz = 0),   # [C] Polaris_Chassis.json
         transmission = TransmissionData(
             tau_red = 1 / (0.267 * 0.25), # [-] [D] fixed 1st gear 0.267 x conical gear 0.25 (low range only)
             eff_red = 0.93,               # [-] [S]
-            front_torque_fraction = 0.5), # [-] [C] Polaris_DrivelineSimple.json "Front Torque Fraction"
+            front_torque_fraction = 0.5,  # [-] [C] Polaris_DrivelineSimple.json "Front Torque Fraction"
+            drive_layout = "driveline_4wd",
+            diff_front = DiffData(mode = "lsd", tbr_on = 2.0, tbr_off = 2.0),   # [C] "Front Differential Max Bias": 2.0
+            diff_rear = DiffData(mode = "lsd", tbr_on = 2.0, tbr_off = 2.0),    # [C] "Rear Differential Max Bias": 2.0
+            diff_centre = DiffData(mode = "open"),   # [C] SimpleDriveline: fixed front torque fraction, no centre coupling
+            k_dif = 700),                 # [Nm*s/rad] [A] TODO(dev): about 0.5*iwa/dt (dt = 1 ms), Euler-stable below 2*iwa/dt
         steering_system = SteeringSystemData(tau_D = 10, tau_H = 0.03),   # [S] TODO(dev): steering ratio not in Chrono data
         braking_system = BrakingSystemData(
             max_brake_torque_front = 2000,  # [Nm] [C] Polaris_BrakeShafts.json "Maximum Torque" (per wheel)

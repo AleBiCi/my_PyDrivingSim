@@ -1,4 +1,4 @@
-from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData,
+from vehicle_model.vehicle_params import (VehicleParams, VehicleData, ChassisData, TransmissionData, DiffData,
                                           SteeringSystemData, BrakingSystemData, MotorData, AccumulatorData,
                                           WheelData, SuspensionData)
 
@@ -51,12 +51,18 @@ def CherokeeVehicleParams():
             CAzf = 0.0,                   # [N*s^2/m^2] [A]
             CAzr = 0.0,                   # [N*s^2/m^2] [A]
             Vlow_long = 4,                # [m/s] [S] TODO(dev): crawler speeds are mostly below this threshold
-            Vlow_lat = 4),                # [m/s] [S]
+            Vlow_lat = 4,                 # [m/s] [S]
+            n_substeps = 2),            # [-] [A] dt = 0.50 ms: wheel/tyre slip loop stable with explicit Euler (open-loop runs)
         chassis = ChassisData(is_xx = 653, is_yy = 2498, is_zz = 2704, is_xz = 0),   # [C] Cherokee_Chassis.cpp
         transmission = TransmissionData(
             tau_red = 11.49 / 0.2,        # [-] [D] lowest gear 1/11.49 ("torque converter and low range") / conical gear 0.2
             eff_red = 0.93,               # [-] [S]
-            front_torque_fraction = 0.5), # [-] [A] Cherokee_Driveline4WD: central differential, equal split assumed
+            front_torque_fraction = 0.5,  # [-] [A] Cherokee_Driveline4WD: central differential, equal split assumed
+            drive_layout = "driveline_4wd",          # [C] Cherokee_Driveline4WD (ShaftsDriveline4WD)
+            diff_front = DiffData(mode = "open"),    # [C] Chrono default: differentials unlocked. TODO(dev)
+            diff_rear = DiffData(mode = "open"),     # [C] TODO(dev)
+            diff_centre = DiffData(mode = "open"),   # [C] TODO(dev)
+            k_dif = 3800),                # [Nm*s/rad] [A] TODO(dev): about 0.5*iwa/dt (dt = 1 ms), Euler-stable below 2*iwa/dt
         steering_system = SteeringSystemData(tau_D = 10, tau_H = 0.03),   # [S] TODO(dev): steering ratio not in Chrono data
         braking_system = BrakingSystemData(
             max_brake_torque_front = 4000,  # [Nm] [C] Cherokee_BrakeShafts.cpp m_maxtorque (per wheel)

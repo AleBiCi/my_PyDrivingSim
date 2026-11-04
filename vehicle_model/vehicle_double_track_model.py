@@ -2,6 +2,7 @@ from math import sin, cos, fabs, tanh
 import numpy as np
 
 from vehicle_model.motor_model import motor_model
+from vehicle_model.driveline_model import driveline_4wd_model
 from vehicle_model.brake_model import brake_model
 from vehicle_model.camber_model import camber_model
 from vehicle_model.perfect_ackermann_model import perfect_ackermann_model
@@ -111,10 +112,19 @@ def vehicle_double_track_model(dX_prev, X, pedal_req, delta_req, pacejka_data, v
     # ----------------------
     ## MOTOR MODEL
     # ----------------------
-    # Driving torques at the wheels
+    # Driving torques at the wheels with correct front/rear torque distribution, according to the vehicle transmission
     Tm_req = posPart(ped) * vehicle_data.motor.maxTorque
-    Tw__rr_traction = motor_model( Tm_req, omega__rr, vehicle_data)
-    Tw__rl_traction = motor_model( Tm_req, omega__rl, vehicle_data)
+    if vehicle_data.transmission.drive_layout == "driveline_4wd":
+        # one engine + centre/front/rear differentials (driveline_model.py)
+        Tw__rr_traction, Tw__rl_traction, Tw__fr_traction, Tw__fl_traction = driveline_4wd_model(
+            Tm_req, omega__rr, omega__rl, omega__fr, omega__fl, vehicle_data)
+    else:
+        # "per_wheel_motors" (Chimera Evo): one motor per driven wheel
+        f_front = vehicle_data.transmission.front_torque_fraction
+        Tw__rr_traction = (1 - f_front) * motor_model( Tm_req, omega__rr, vehicle_data)
+        Tw__rl_traction = (1 - f_front) * motor_model( Tm_req, omega__rl, vehicle_data)
+        Tw__fr_traction = f_front * motor_model( Tm_req, omega__fr, vehicle_data)
+        Tw__fl_traction = f_front * motor_model( Tm_req, omega__fl, vehicle_data)
 
     # ----------------------
     # BRAKE MODEL
@@ -134,8 +144,8 @@ def vehicle_double_track_model(dX_prev, X, pedal_req, delta_req, pacejka_data, v
     # The total torque for each wheel is the algebraic sum of motor and brake torques
     Tw__rr = Tw__rr_traction + Tw__rr_brake
     Tw__rl = Tw__rl_traction + Tw__rl_brake
-    Tw__fr = Tw__fr_brake
-    Tw__fl = Tw__fl_brake
+    Tw__fr = Tw__fr_traction + Tw__fr_brake
+    Tw__fl = Tw__fl_traction + Tw__fl_brake
 
     # ----------------------
     # CAMBER MODEL

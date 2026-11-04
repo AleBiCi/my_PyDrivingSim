@@ -59,12 +59,28 @@ def motor_model( Tm_request, omega__wheel, params ):
             Tw = Tm_request * tau_red * eff_red
     elif omega_limit < omega__mot <= omega_motTorqueCut:
         Tw = (maxPower_split * (10**3) * tau_red * eff_red ) / omega__mot
+        # TODO(dev): FUTURE DEVELOPMENT (not active, original upstream line kept above).
+        # With zero pedal (Tm_request <= 1e-4) omega_limit falls back to the base speed
+        # P_split/maxTorque, so between base speed and omega_motTorqueCut the line above
+        # delivers full power-limited torque even with the pedal released.
+        # Proposed fix: the power limit caps the request instead of replacing it.
+        # Tw = min(Tm_request, (maxPower_split * (10**3)) / omega__mot) * tau_red * eff_red
     elif omega_motTorqueCut < omega__mot < omega_mot_max:
         Tw = (torque_mot_at_max_speed + slopeTorqueCut * ( omega__mot - omega_motTorqueCut ) ) * tau_red * eff_red
+        # TODO(dev): FUTURE DEVELOPMENT (not active). Same issue as above: the ramp torque
+        # is delivered regardless of Tm_request (zero pedal still gives torque here).
+        # Proposed fix:
+        # Tw = min(Tm_request, torque_mot_at_max_speed + slopeTorqueCut * ( omega__mot - omega_motTorqueCut )) * tau_red * eff_red
     elif omega__mot <= omega_limit and Tm_request > max_mot_torque:
         Tw = max_mot_torque * tau_red * eff_red
     else:
         Tw = torque_mot_at_max_speed * tau_red * eff_red
+        # TODO(dev): FUTURE DEVELOPMENT (not active, original upstream line kept above).
+        # Reached only for omega__mot >= omega_mot_max. The ramp above reaches 0 at
+        # omega_mot_max, then the line above jumps back to P_split/omega_motTorqueCut,
+        # so maxRotSpeed is not a hard top speed.
+        # Proposed fix: no driving torque at or above maxRotSpeed.
+        # Tw = 0
 
     return Tw
 

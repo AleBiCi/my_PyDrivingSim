@@ -6,8 +6,8 @@ import math
 
 from pydrivingsim import World, Vehicle, Agent, Target, Obstacle, OBSTACLE_TYPES, PathOverlay
 
-# input_data_str holds 20 objects: 1 target + up to 19 obstacles
-MAX_OBSTACLES = 19
+# input_data_str holds 20 objects: 1 GPS pseudo-object + 1 target + up to 18 obstacles
+MAX_OBSTACLES = 18
 DEFAULT_TILE_SIZE = 20.0        # [m]
 
 
@@ -36,7 +36,7 @@ def load_map(path):
 
     obstacles = m.get("obstacles", [])
     if len(obstacles) > MAX_OBSTACLES:
-        raise ValueError("%s: %d obstacles, max %d (the scenario message holds 20 objects incl. the target)"
+        raise ValueError("%s: %d obstacles, max %d (the scenario message holds 20 objects incl. GPS and target)"
                          % (path, len(obstacles), MAX_OBSTACLES))
     for i, o in enumerate(obstacles):
         where = "obstacles[%d]" % i

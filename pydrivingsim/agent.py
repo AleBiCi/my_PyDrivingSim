@@ -13,6 +13,11 @@ from pydrivingsim import World, Vehicle, TrafficLight, TrafficCone, Target, Sugg
 
 # Max objects in the scenario message (input_data_str.ObjID[20])
 MAX_OBJS = 20
+# Ego "GPS" pseudo-object, always in slot 0. The interface has no pose fields and cannot change
+# (precompiled libagent_lib; see the GPS TODO in lib/interfaces_data_structs.h), so:
+#   ObjX, ObjY = vehicle position in the world frame [m], ObjCourse = yaw [rad, CCW from world x],
+#   ObjVel = speed module [m/s], ObjLen = ObjWidth = 0.
+OBJ_ID_GPS = 5
 
 
 c = agent_lib.AgentConnector()
@@ -126,7 +131,15 @@ class Agent():
         trafficlight = 0
         trafficlightDist = 0
         speedlimitId = 0
-        objId = 0
+        # GPS pseudo-object (always in slot 0)
+        s.ObjID[0] = OBJ_ID_GPS
+        s.ObjX[0] = v.state[0]
+        s.ObjY[0] = v.state[1]
+        s.ObjCourse[0] = v.state[2]
+        s.ObjVel[0] = sqrt(v.state[3]**2 + v.state[4]**2)
+        s.ObjLen[0] = 0
+        s.ObjWidth[0] = 0
+        objId = 1
         target = 0
         for obj in World().obj_list:
             if type(obj) is TrafficLight:

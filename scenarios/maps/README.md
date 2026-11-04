@@ -38,7 +38,7 @@ x to the right, y up on the screen, yaw counter-clockwise from x.
 | `start.yaw_deg` | no | Initial heading [deg], default 0. |
 | `target.x`, `target.y` | yes | Goal. The run ends when the vehicle is within 1 m of it on both axes (`Target.render`). |
 | `stop_on_collision` | no | End the run on the first collision (default `true`). With `false` the hit obstacle turns red and the run continues. |
-| `obstacles[]` | no | Up to **19** static obstacles (the scenario message holds 20 objects, one is the target). |
+| `obstacles[]` | no | Up to **18** static obstacles (the scenario message holds 20 objects: GPS, target, obstacles). |
 | `obstacles[].type` | yes | `rock`, `boulder`, `tree`, `bush` or `stump` (sprite `imgs/offroad/<type>.png`). |
 | `obstacles[].x`, `.y` | yes | Centre [m]. |
 | `obstacles[].d` | yes | Footprint diameter [m]. The footprint is a circle for the collision check and for the agent. |
@@ -53,10 +53,11 @@ message, in the vehicle frame like cones and coins:
 
 | `ObjID` | Object | `ObjX`, `ObjY` | `ObjLen`, `ObjWidth` |
 |---|---|---|---|
+| 5 | ego "GPS", always index 0 | vehicle position, **world** frame [m]; `ObjCourse` = yaw [rad, CCW] | 0 |
 | 3 | target | centre, vehicle frame [m] | 0 |
 | 4 | obstacle | centre, vehicle frame [m] | diameter `d` [m] |
 
-Objects keep the same order in every message (map order, target first), so index `i` is the
+Objects keep the same order in every message (GPS, then target, then map order), so index `i` is the
 same object across cycles. If the agent fills `NTrajectoryPoints` and
 `TrajectoryPointIX/IY` (vehicle frame), the simulator draws them as a yellow polyline.
 

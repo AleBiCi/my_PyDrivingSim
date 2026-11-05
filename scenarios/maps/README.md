@@ -13,13 +13,12 @@ Look at a map without the agent (preview window only, Esc closes it):
 
     python simulator.py --map scenarios/maps/offroad_boulder_field.json --preview
 
-Create or edit a map:
+Create or edit a map with the map editor (30 m x 30 m square maps, saved in `scenarios/maps/custom_maps/`):
 
-    python map_editor.py scenarios/maps/my_map.json [--vehicle chimera]
+    python scenarios/maps/map_editor.py [map_name | map file]
 
-Place obstacles (keys 1-5), the target (T) and the start pose (S, drag to set the yaw), move and resize
-them (V, `[` `]`), save with Ctrl+S. The editor refuses a 19th obstacle and saves only maps that `load_map`
-accepts; obstacles on the start footprint or on the target turn red. All keys are listed in its side panel.
+Guide: [MAP_EDITOR.md](MAP_EDITOR.md). Run a saved map like any other:
+`python simulator.py --map scenarios/maps/custom_maps/map_<name>.json`.
 
 Without `--map` the simulator runs the original scenario (`AutonomousVehicle` + traffic light + speed limit).
 
@@ -50,6 +49,7 @@ x to the right, y up on the screen, yaw counter-clockwise from x.
 | `start.x`, `start.y` | yes | Initial vehicle position [m]. |
 | `start.yaw_deg` | no | Initial heading [deg], default 0. |
 | `target.x`, `target.y` | yes | Goal. The run ends when the vehicle is within 1 m of it on both axes (`Target.render`). |
+| `bounds` | no | Square border `{"x_min", "y_min", "size"}` [m], written by the map editor (`0, -15, 30`). Every object must lie inside it; the preview draws it. The agent does not receive it. |
 | `stop_on_collision` | no | End the run on the first collision (default `true`). With `false` the hit obstacle turns red and the run continues. |
 | `obstacles[]` | no | Up to **18** static obstacles (the scenario message holds 20 objects: GPS, target, obstacles). |
 | `obstacles[].type` | yes | `rock`, `boulder`, `tree`, `bush` or `stump` (sprite `imgs/offroad/<type>.png`). |

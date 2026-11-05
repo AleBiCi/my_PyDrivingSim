@@ -36,7 +36,8 @@ forked at `github.com/AleBiCi/my_PyDrivingSim`. Workspace rules are in `../../CL
   drawing in `pydrivingsim/mapview.py`) with the whole RRT* path asked to the running agent through a handshake on the
   unused fields `AutomationLevel` (= -(page+1)) / `ManoeuverType` (= 1000 + HLP status), see `scenarios/maps/README.md`
   "Pre-run preview handshake" and `Agent.preview_path`; Start begins the run, `--autostart` skips it.
-  `map_editor.py` creates/edits JSON maps (max 18 obstacles, validated with `validate_map`).
+  `scenarios/maps/map_editor.py` (moved 2026-11-05) creates/edits 30 m x 30 m maps (`bounds` key, 1 m border margin, max 18
+  obstacles, validated with `validate_map`), saved only in `scenarios/maps/custom_maps/map_<name>.json`. Guide `scenarios/maps/MAP_EDITOR.md`.
 - `agent/`: ctypes bindings and precompiled `libagent_lib` (read-only). `interfaces_python_data_structs.py`
   must stay byte-compatible with `basic_agent_ST/lib/interfaces_data_structs.h`.
 

@@ -1,5 +1,5 @@
 # Top-down drawing of an off-road map (scenarios/maps/README.md) with its own zoom and pan.
-# Used by the pre-run preview (pydrivingsim/previewpanel.py) and by the map editor (map_editor.py).
+# Used by the pre-run preview (scenarios/map_preview.py) and by the map editor (scenarios/maps/map_editor.py).
 # It does not use World(), so it also works in a window that is not the simulator's.
 
 import math
@@ -17,6 +17,8 @@ TARGET_COLOR = (230, 40, 40)
 FOOTPRINT_COLOR = (255, 255, 255)
 WARN_COLOR = (255, 60, 60)
 SELECT_COLOR = (255, 230, 0)
+BORDER_COLOR = (250, 250, 250)
+OUTSIDE_SHADE = (0, 0, 0, 110)     # RGBA over the area outside the map bounds
 TARGET_REACH = 1.0                  # [m] Target.render ends the run within 1 m on both axes
 MIN_SCALE, MAX_SCALE = 1.0, 80.0    # [px/m]
 
@@ -52,6 +54,10 @@ class MapView:
         m = self.m
         xs = [m["start"]["x"], m["target"]["x"]] + [p[0] for p in extra_points]
         ys = [m["start"]["y"], m["target"]["y"]] + [p[1] for p in extra_points]
+        if "bounds" in m:
+            b = m["bounds"]
+            xs += [b["x_min"], b["x_min"] + b["size"]]
+            ys += [b["y_min"], b["y_min"] + b["size"]]
         for o in m["obstacles"]:
             xs += [o["x"] - o["d"] / 2, o["x"] + o["d"] / 2]
             ys += [o["y"] - o["d"] / 2, o["y"] + o["d"] / 2]
@@ -139,6 +145,20 @@ class MapView:
                 surf.blit(self.font.render("%g" % (k * step), True, GRID_COLOR), (self.rect.left + 2, py + 2))
             k += 1
 
+    def _draw_bounds(self, surf):
+        """Map border (key "bounds"): shade outside, white square on the edge."""
+        if "bounds" not in self.m:
+            return
+        b = self.m["bounds"]
+        x0, y0 = self.w2s(b["x_min"], b["y_min"] + b["size"])
+        x1, y1 = self.w2s(b["x_min"] + b["size"], b["y_min"])
+        inner = pygame.Rect(int(x0), int(y0), int(x1 - x0), int(y1 - y0))
+        shade = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        shade.fill(OUTSIDE_SHADE)
+        shade.fill((0, 0, 0, 0), inner.move(-self.rect.left, -self.rect.top))
+        surf.blit(shade, self.rect.topleft)
+        pygame.draw.rect(surf, BORDER_COLOR, inner, 3)
+
     # ---------------------------------------------------------------- objects
     def vehicle_corners(self, x, y, yaw):
         """World corners of the VehicleLen x VehicleWidth rectangle (the collision footprint, obstacle.py)."""
@@ -196,6 +216,7 @@ class MapView:
         surf.set_clip(self.rect)
         self._draw_background(surf)
         self._draw_grid(surf)
+        self._draw_bounds(surf)
         for i, o in enumerate(self.m["obstacles"]):
             self.draw_obstacle(surf, o, selected == ("obstacle", i), ("obstacle", i) in warn)
         self.draw_path(surf, path)

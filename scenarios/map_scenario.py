@@ -51,6 +51,23 @@ def validate_map(m, path):
         if o["d"] <= 0:
             raise ValueError("%s: %s diameter must be > 0" % (path, where))
     m["obstacles"] = obstacles
+
+    # Optional square border (written by scenarios/maps/map_editor.py): every object must lie inside it
+    if "bounds" in m:
+        b = m["bounds"]
+        b = m["bounds"] = {"x_min": num(b, "x_min", "bounds"), "y_min": num(b, "y_min", "bounds"),
+                           "size": num(b, "size", "bounds")}
+        if b["size"] <= 0:
+            raise ValueError("%s: bounds size must be > 0" % path)
+        x_max, y_max = b["x_min"] + b["size"], b["y_min"] + b["size"]
+
+        def inside(x, y, r, where):
+            if x - r < b["x_min"] or x + r > x_max or y - r < b["y_min"] or y + r > y_max:
+                raise ValueError("%s: %s outside the bounds" % (path, where))
+        inside(m["start"]["x"], m["start"]["y"], 0.0, "start")
+        inside(m["target"]["x"], m["target"]["y"], 0.0, "target")
+        for i, o in enumerate(obstacles):
+            inside(o["x"], o["y"], o["d"] / 2, "obstacles[%d]" % i)
     return m
 
 

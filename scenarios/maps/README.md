@@ -4,9 +4,22 @@ Run a map with the agent (start the C++ agent first):
 
     python simulator.py --map scenarios/maps/offroad_boulder_field.json
 
-Look at a map without the agent (vehicle still, camera on the map centre):
+The run opens with the **pre-run preview**: the whole map fitted to the window with the agent's RRT* path
+(cyan), the vehicle frozen. Press **START** (or Space/Enter) to start the simulation, Esc to quit.
+Wheel = zoom, left drag = pan, F = fit. During the run the cyan path stays on screen and the yellow polyline
+is the trajectory window the agent sends every cycle. `--autostart` skips the preview.
+
+Look at a map without the agent (preview window only, Esc closes it):
 
     python simulator.py --map scenarios/maps/offroad_boulder_field.json --preview
+
+Create or edit a map:
+
+    python map_editor.py scenarios/maps/my_map.json [--vehicle chimera]
+
+Place obstacles (keys 1-5), the target (T) and the start pose (S, drag to set the yaw), move and resize
+them (V, `[` `]`), save with Ctrl+S. The editor refuses a 19th obstacle and saves only maps that `load_map`
+accepts; obstacles on the start footprint or on the target turn red. All keys are listed in its side panel.
 
 Without `--map` the simulator runs the original scenario (`AutonomousVehicle` + traffic light + speed limit).
 
@@ -73,3 +86,20 @@ Each obstacle type loads `imgs/offroad/<type>.png` (top view, transparent backgr
 file falls back to `imgs/error.png`, so maps run before the artwork is chosen. The sprite is scaled
 so that `SPRITE_FILL` (in `pydrivingsim/obstacle.py`) of its width equals the diameter `d`.
 To add an obstacle type, add the name to `OBSTACLE_TYPES` there and drop in the PNG.
+
+## Pre-run preview handshake
+
+The preview path is planned by the running agent (its `PoseEstimator` and RRT\*), not by the simulator.
+With the vehicle frozen, `Agent.preview_path` (`pydrivingsim/agent.py`) sends normal scenario messages with
+two fields that are otherwise unused:
+
+| Field | Value | Meaning |
+|---|---|---|
+| `AutomationLevel` (scenario) | `-(page + 1)` | preview request for page `page`; `0` in every normal cycle |
+| `TrajectoryPointIX/IY` (manoeuvre) | vehicle frame | path vertices `[22 page, 22 page + 22]`; consecutive pages share one vertex |
+| `ManoeuverType` (manoeuvre) | `1000 + HLP status` | `1000` = path OK; other codes in `basic_agent_ST/hlp/hlp.h`, `rrt_star.h` |
+
+The agent plans on the first of these cycles (as it would on its first normal cycle), answers with
+`hlp_path_page` and skips longitudinal/lateral control and logs (`starting_point.cc`, "PRE-RUN MAP PREVIEW").
+Paging stops at the first page with fewer than 23 points. An agent built before this change does not answer
+with `1000 + status`: the preview then shows its first trajectory window and says so in red.

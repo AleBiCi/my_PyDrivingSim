@@ -32,6 +32,11 @@ forked at `github.com/AleBiCi/my_PyDrivingSim`. Workspace rules are in `../../CL
   `pydrivingsim/pathoverlay.py` draws the agent's `TrajectoryPointIX/IY`. `World.set_background_tile` for an
   optional tiled background. `agent.py` sends target as `ObjID = 3` and obstacles as `ObjID = 4`
   (diameter in `ObjLen/ObjWidth`), also in the original scenario (target at (182, -1)).
+- Pre-run preview + map editor (uncommitted, 2026-11-04): with `--map` the run opens a preview (`scenarios/map_preview.py`,
+  drawing in `pydrivingsim/mapview.py`) with the whole RRT* path asked to the running agent through a handshake on the
+  unused fields `AutomationLevel` (= -(page+1)) / `ManoeuverType` (= 1000 + HLP status), see `scenarios/maps/README.md`
+  "Pre-run preview handshake" and `Agent.preview_path`; Start begins the run, `--autostart` skips it.
+  `map_editor.py` creates/edits JSON maps (max 18 obstacles, validated with `validate_map`).
 - `agent/`: ctypes bindings and precompiled `libagent_lib` (read-only). `interfaces_python_data_structs.py`
   must stay byte-compatible with `basic_agent_ST/lib/interfaces_data_structs.h`.
 

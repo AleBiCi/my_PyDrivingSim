@@ -20,11 +20,12 @@ class GracefulKiller:
 def main():
     parser = argparse.ArgumentParser(description="PyDrivingSim")
     parser.add_argument("--map", help="off-road map file (JSON), e.g. scenarios/maps/offroad_boulder_field.json")
-    parser.add_argument("--preview", action="store_true", help="with --map: show the map without connecting to the agent")
+    parser.add_argument("--preview", action="store_true", help="with --map: show the map without connecting to the agent, then quit")
+    parser.add_argument("--autostart", action="store_true", help="with --map: skip the pre-run preview and start at once")
     args = parser.parse_args()
 
     if args.map:
-        av = MapScenario(args.map, use_agent=not args.preview)
+        av = MapScenario(args.map, use_agent=not args.preview, wait_start=not args.autostart)
     else:
         # Enable this to test only single vehicle
         #av = OnlyVehicle()

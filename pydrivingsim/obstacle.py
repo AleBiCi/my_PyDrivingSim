@@ -14,6 +14,18 @@ SPRITE_FILL = 0.8
 OBSTACLE_TYPES = ("rock", "boulder", "tree", "bush", "stump")
 
 
+def circle_hits_rectangle(xo, yo, d, xr, yr, yaw, length, width):
+    """Circle of diameter d centred in (xo, yo) vs rectangle length x width centred in (xr, yr), rotated by yaw."""
+    dx = xo - xr
+    dy = yo - yr
+    # circle centre in the rectangle frame
+    xv = dx * math.cos(yaw) + dy * math.sin(yaw)
+    yv = -dx * math.sin(yaw) + dy * math.cos(yaw)
+    cx = min(max(xv, -length / 2), length / 2)
+    cy = min(max(yv, -width / 2), width / 2)
+    return (xv - cx) ** 2 + (yv - cy) ** 2 < (d / 2) ** 2
+
+
 class ObstacleSprite(pygame.sprite.Sprite):
     def __init__(self, obstacle):
         super().__init__()
@@ -75,16 +87,8 @@ class Obstacle(VirtualObject):
     def collides(self) -> bool:
         """Circle (obstacle) vs rectangle VehicleLen x VehicleWidth centred on the vehicle position."""
         v = self.obj
-        half_l = v.vehicle.vehicle.L / 2
-        half_w = v.vehicle.vehicle.Wf / 2
-        dx = self.pos[0] - v.state[0]
-        dy = self.pos[1] - v.state[1]
-        # obstacle centre in the vehicle frame
-        xv = dx * math.cos(v.state[2]) + dy * math.sin(v.state[2])
-        yv = -dx * math.sin(v.state[2]) + dy * math.cos(v.state[2])
-        cx = min(max(xv, -half_l), half_l)
-        cy = min(max(yv, -half_w), half_w)
-        return (xv - cx) ** 2 + (yv - cy) ** 2 < (self.d / 2) ** 2
+        return circle_hits_rectangle(self.pos[0], self.pos[1], self.d, v.state[0], v.state[1], v.state[2],
+                                     v.vehicle.vehicle.L, v.vehicle.vehicle.Wf)
 
     def object_freq_compute(self):
         if self.obj is None or self.state == 1:
